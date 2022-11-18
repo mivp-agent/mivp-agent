@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from mivp_agent.cli.util import get_log
 
-from .graphers import tdist, flagdist, prcnt_success
+from .graphers import tdist, flagdist
 
 options = {}
 options['tdist'] = {
@@ -14,10 +14,13 @@ options['flagdist'] = {
   'class': flagdist.FlagDist,
   'help': 'Plot the min distance that the agent gets to the blue flag for each episode'
 }
+# TODO: No idea where the prcnt_success code is
+''' 
 options['prcnt_success'] = {
   'class': prcnt_success.PrcntSuccess,
   'help': 'Plot the precent success on a rolling basis. Use --window to set the window size'
 }
+'''
 
 class Inspector:
   def __init__(self, parser):
