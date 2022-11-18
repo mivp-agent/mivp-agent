@@ -15,6 +15,7 @@ from mivp_agent.proto.proto_logger import ProtoLogger
 from mivp_agent.proto.mivp_agent_pb2 import Transition
 from mivp_agent.proto import translate
 
+
 class MissionManager:
     '''
     This is the primary method for interfacing with moos-ivp-agent's BHV_Agent
@@ -63,7 +64,7 @@ class MissionManager:
 
         self._thread = None
         self._stop_signal = False
-        
+
         if output_dir is None:
             output_dir = os.path.join(
                 os.path.abspath(os.getcwd()),
@@ -113,7 +114,7 @@ class MissionManager:
         if not os.path.isdir(self._model_path):
             os.makedirs(self._model_path)
         return self._model_path
-    
+
     def log_output_dir(self):
         '''
         Returns the log path for the current session so custom files can be added to it.
@@ -214,7 +215,7 @@ class MissionManager:
     def _do_logging(self, msg):
         if not self._log:
             return
-        
+
         # Check in whitelist if exists
         if self._log_whitelist is not None:
             if msg.vname not in self._log_whitelist:
@@ -314,7 +315,7 @@ class MissionManager:
           vname (str): the vname of the vehicle
 
         Returns:
-          str: The state of the `pEpisodeManager` on the vehicle 
+          str: The state of the `pEpisodeManager` on the vehicle
         '''
         with self._ems_lock:
             # Should be all strings so no reference odd ness
@@ -339,7 +340,6 @@ class MissionManager:
         if self._log:
             for vehicle in self._logs:
                 self._logs[vehicle].close()
-
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()

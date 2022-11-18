@@ -3,7 +3,6 @@ from threading import Lock
 from mivp_agent.const import KEY_ID
 from mivp_agent.const import KEY_EPISODE_MGR_REPORT, KEY_EPISODE_MGR_STATE
 from mivp_agent.util.validate import validateAction
-from mivp_agent.util.parse import parse_report
 
 INSTR_SEND_STATE = {
     'speed': 0.0,
@@ -52,6 +51,7 @@ INSTR_RESET_FAILURE = {
     'ctrl_msg': 'SEND_STATE'
 }
 
+
 class MissionMessage:
     '''
     This class is used to parse incoming messages into attributes (see below) and provide a simple interface for responding to each message.
@@ -85,7 +85,7 @@ class MissionMessage:
         self.episode_state = None
         if self.state[KEY_EPISODE_MGR_STATE] is not None:
             self.episode_state = self.state[KEY_EPISODE_MGR_STATE]
-        
+
         # For use by logger
         self._is_transition = is_transition
 
@@ -123,7 +123,7 @@ class MissionMessage:
                 'ACTION': 'ATTACK_LEFT'
               },
           })
-          ``` 
+          ```
         '''
         self._assert_no_rsp()
         # Copy so we don't run into threading errors if client reuses the action dict

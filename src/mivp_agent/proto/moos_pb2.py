@@ -11,8 +11,6 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-
-
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='moos.proto',
   package='mivp_agent',
@@ -21,8 +19,6 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   create_key=_descriptor._internal_create_key,
   serialized_pb=b'\n\nmoos.proto\x12\nmivp_agent\"M\n\x07MOOSVar\x12\x0b\n\x03key\x18\x01 \x02(\t\x12\x0e\n\x04sval\x18\x02 \x01(\tH\x00\x12\x0e\n\x04\x64val\x18\x03 \x01(\x01H\x00\x12\x0e\n\x04\x62val\x18\x04 \x01(\x08H\x00\x42\x05\n\x03val\"a\n\nNodeReport\x12\r\n\x05vname\x18\x01 \x02(\t\x12\r\n\x05NAV_X\x18\x02 \x02(\x01\x12\r\n\x05NAV_Y\x18\x03 \x02(\x01\x12\x13\n\x0bNAV_HEADING\x18\x04 \x02(\x01\x12\x11\n\tMOOS_TIME\x18\x05 \x02(\x01'
 )
-
-
 
 
 _MOOSVAR = _descriptor.Descriptor(

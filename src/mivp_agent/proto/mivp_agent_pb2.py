@@ -25,8 +25,6 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   dependencies=[moos__pb2.DESCRIPTOR,])
 
 
-
-
 _EPISODEREPORT = _descriptor.Descriptor(
   name='EpisodeReport',
   full_name='mivp_agent.EpisodeReport',
