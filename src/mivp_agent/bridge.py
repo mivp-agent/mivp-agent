@@ -16,7 +16,7 @@ def recv_full(connection):
     current_len = None
     last_read = None
     total_read = None
-    # Create byte string for storing the header in
+    # Create byte string for storing the header in 
     tmp_data = b''
 
     tmp_data = connection.recv(MAX_BUFFER_SIZE)
