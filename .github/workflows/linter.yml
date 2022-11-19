@@ -1,0 +1,23 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, actions ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+  DEBUG_OUTPUT: false
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install linting dependencies
+      run: pip3 install '.[lint]''
+    - name: Run flake8 linter 
+      run: flake8 src test
