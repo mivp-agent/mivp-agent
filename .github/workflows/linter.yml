@@ -18,6 +18,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install linting dependencies
-      run: pip3 install '.[lint]''
+      run: pip3 install '.[lint]'
     - name: Run flake8 linter 
       run: flake8 src test
