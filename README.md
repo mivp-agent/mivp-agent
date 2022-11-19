@@ -1,5 +1,8 @@
 # mivp-agent
 
+[![Unit Tests](https://github.com/mivp-agent/mivp-agent/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/mivp-agent/mivp-agent/actions/workflows/unit-tests.yml)
+[![Linter](https://github.com/mivp-agent/mivp-agent/actions/workflows/linter.yml/badge.svg)](https://github.com/mivp-agent/mivp-agent/actions/workflows/linter.yml)
+
 This repository contains the Python code required to run mivp-agent agents.
 
 ## Local Installation
