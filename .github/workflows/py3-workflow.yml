@@ -1,0 +1,31 @@
+name: Python Build
+
+on:
+  push:
+    branches: [ main, actions ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+  DEBUG_OUTPUT: false
+
+jobs:
+  build-n-test:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-18.04, macos-11, macos-10.15]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install deps for ubuntu 18 runners
+      if: matrix.os == 'ubuntu-18.04'
+      run: pip3 install setuptools wheel
+    - name: Install mivp_agent
+      run: pip3 install .
+    - name: Install mivp_agent testing deps
+      run: pip3 install .[test]
+    - name: Run python tests
+      run: cd test && ./test_all.py
