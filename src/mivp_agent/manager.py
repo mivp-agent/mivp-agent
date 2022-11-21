@@ -174,12 +174,12 @@ class MissionManager:
                         )
 
                         with self._ems_lock:
-                            self._episode_manager_states[m.vname] = m.episode_state
+                            self._episode_manager_states[m.vid] = m.episode_state
                         with self._emn_lock:
                             if m.episode_report is None:
-                                self._episode_manager_nums[m.vname] = None
+                                self._episode_manager_nums[m.vid] = None
                             else:
-                                self._episode_manager_nums[m.vname] = m.episode_report['NUM']
+                                self._episode_manager_nums[m.vid] = m.episode_report['NUM']
 
                         live_msg_list.append(m)
                         self._msg_queue.put(m)
@@ -218,27 +218,27 @@ class MissionManager:
 
         # Check in whitelist if exists
         if self._log_whitelist is not None:
-            if msg.vname not in self._log_whitelist:
+            if msg.vid not in self._log_whitelist:
                 return
 
         # Check if this is a new vehicle
-        if msg.vname not in self._logs:
-            path = os.path.join(self._log_path, f"log_{msg.vname}")
-            self._logs[msg.vname] = ProtoLogger(path, Transition, mode='w')
+        if msg.vid not in self._logs:
+            path = os.path.join(self._log_path, f"log_{msg.vid}")
+            self._logs[msg.vid] = ProtoLogger(path, Transition, mode='w')
 
         if msg._is_transition:
             # Write a transition if this is not the first state ever
-            if msg.vname in self._last_state:
+            if msg.vid in self._last_state:
                 t = Transition()
-                t.s1.CopyFrom(translate.state_from_dict(self._last_state[msg.vname]))
-                t.a.CopyFrom(translate.action_from_dict(self._last_act[msg.vname]))
-                t.s2.CopyFrom(translate.state_from_dict(msg.state))
+                t.s1.CopyFrom(translate.state_from_dict(self._last_state[msg.vid]))
+                t.a.CopyFrom(translate.action_from_dict(self._last_act[msg.vid]))
+                t.s2.CopyFrom(translate.state_from_dict(msg.observation))
 
-                self._logs[msg.vname].write(t)
+                self._logs[msg.vid].write(t)
 
             # Update the storage for next transition
-            self._last_state[msg.vname] = msg.state
-            self._last_act[msg.vname] = msg._response
+            self._last_state[msg.vid] = msg.observation
+            self._last_act[msg.vid] = msg._response
 
     def are_present(self, vnames):
         '''
@@ -265,8 +265,19 @@ class MissionManager:
         '''
         while not self.are_present(vnames):
             time.sleep(sleep)
+    
+    def wait_for_count(self, count, sleep=0.1):
+        '''
+        Used to block until a specified number of vehicles have connected to the `MissionManager` instance.
 
-    def get_message(self, block=True):
+        Args:
+          vnames (int): The number of vehicles to wait for
+          sleep (float): Amount of time in seconds to sleep for between checks
+        '''
+        while not self._vehicle_count <= count:
+            time.sleep(sleep)
+
+    def get_message(self, block=True) -> MissionMessage:
         '''
         Used as the primary method for receiving data from `BHV_Agent`.
 
@@ -282,8 +293,8 @@ class MissionManager:
           ```
             msg = mgr.get_message()
 
-            NAV_X = msg.state['NAV_X']
-            NAV_Y = msg.state['NAV_Y']
+            NAV_X = msg.observation['NAV_X']
+            NAV_Y = msg.observation['NAV_Y']
 
             # ...
             # Some processing
@@ -306,6 +317,14 @@ class MissionManager:
           int: The amount of vehicles that have connected to this instance of `MissionManager`
         '''
         return self._vehicle_count
+    
+    def get_ids(self):
+        '''
+        Returns:
+            list: A copy of the ids of each vehicle currently connected.
+        '''
+        with self._vname_lock:
+            return self._vnames[:]
 
     def episode_state(self, vname):
         '''

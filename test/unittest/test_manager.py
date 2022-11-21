@@ -73,7 +73,7 @@ class TestManagerCore(unittest.TestCase):
                 # Check recving of state
                 msg = mgr.get_message(block=True)
                 self.assertTrue(isinstance(msg, MissionMessage))
-                self.assertEqual(msg.state, DUMMY_STATE_PARSED)
+                self.assertEqual(msg.observation, DUMMY_STATE_PARSED)
                 self.assertEqual(msg.episode_report, DUMMY_REPORT)
                 self.assertEqual(msg.episode_state, 'PAUSED')
                 # Make sure there are no messages for the client yet
