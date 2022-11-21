@@ -27,5 +27,7 @@ jobs:
       run: pip3 install .
     - name: Install mivp_agent testing deps
       run: pip3 install .[test]
-    - name: Run python tests
-      run: cd test && ./test_all.py
+    - name: Run unittest tests
+      run: cd test/unittest && ./test_all.py
+    - name: Run pytest tests
+      run: pytest
