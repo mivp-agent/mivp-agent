@@ -2,6 +2,7 @@ from mivp_agent.agent import Agent, Model
 
 from .actions import FAKE_ACTION
 
+
 class FakeAgent(Agent):
     def __init__(self, model) -> None:
         self.model = model

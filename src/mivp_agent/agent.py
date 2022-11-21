@@ -4,7 +4,7 @@ from copy import deepcopy
 from mivp_agent.model import Model
 
 
-class Agent(ABC): 
+class Agent(ABC):
     @abstractmethod
     def build_model(self) -> Model:
         pass

@@ -9,6 +9,7 @@ from fake.agent import FakeAgent
 from mivp_agent import Driver, Agent, Model
 from mivp_agent.messages import MissionMessage
 
+
 @patch('mivp_agent.Agent.__abstractmethods__', set())
 @patch('mivp_agent.driver.MissionManager')
 def test_context_manager(mock_manager):
@@ -28,6 +29,7 @@ def test_context_manager(mock_manager):
                 pass
 
     mock_manager.return_value.__exit__.assert_called_once()
+
 
 @patch('mivp_agent.Agent.__abstractmethods__', set())
 @patch('mivp_agent.driver.MissionManager')
@@ -90,8 +92,10 @@ def test_sample_preflight_pause(mock_manager):
 
         # Make the stop() method cause the state from `MissionManager.epsiode_state` change
         id = tuple(episode_state.keys())[i] # Order not particular important
+
         def mutate_state(id=id): # <--- forcing early binding of id (otherwise id2 is bound to both instances of the function)
             episode_state[id] = 'PAUSED'
+
         m.stop.side_effect = mutate_state
     
     mock_manager.get_message.side_effect = message_mocks
@@ -102,6 +106,7 @@ def test_sample_preflight_pause(mock_manager):
         next(d.sample(1,1))
     for m in message_mocks:
         m.stop.assert_called_once()
+
 
 @patch('mivp_agent.Agent')
 @patch('mivp_agent.driver.MissionManager')
@@ -137,9 +142,8 @@ def test_sample_single_batch(mock_manager, mock_agent):
     Constructing both a fake and a mock on this one to I can verify that the correct methods have been called
     '''
     mock_model = MagicMock(spec=Model)
-
     mock_model.rlock.return_value.__exit__.return_value = None
-    #mock_model.rlock.return_value = Mock(autospec=True)
+
     fa = FakeAgent(mock_model)
     mock_agent.build_model.side_effect = fa.build_model
     mock_agent.observation_to_state.side_effect = fa.observation_to_state

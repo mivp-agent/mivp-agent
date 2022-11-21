@@ -3,6 +3,7 @@ from typing import Any
 
 from readerwriterlock.rwlock import RWLockFair
 
+
 class Model(ABC):
     def __new__(cls, *args, **kwargs):
         instance = super(Model, cls).__new__(cls, *args, **kwargs)

@@ -6,6 +6,7 @@ from mivp_agent.manager import MissionManager
 from mivp_agent.agent import Agent
 from mivp_agent.environment import Environment
 
+
 @dataclass
 class VehicleCache:
     # Store the last_episode number to detect episode transitions in new incoming messages
@@ -24,7 +25,9 @@ class Transition:
     action: Any
     s2: Any
 
+
 Batch = List[Transition]
+
 
 class Driver:
     def __init__(
@@ -96,7 +99,7 @@ class Driver:
 
         NOTE: To guard against undefined behavior this method will grab a locking primitive to prevent against simultaneous calls.
 
-        Additionally there is a check to make sure the Driver's context has been acquired by at least one source. This assures that the `MissionManager` server thread is started and open for communication. 
+        Additionally there is a check to make sure the Driver's context has been acquired by at least one source. This assures that the`MissionManager` server thread is started and open for communication.
         '''
         # Someone has to have acquired the context (not a great guarantee of anything really)
         if self._context_lock.acquire(False):
@@ -146,8 +149,6 @@ class Driver:
                     ))
 
                 # Get new action from model and update cache
-                #print('yo')
-                #print(self._model.rlock())
                 with self._model.rlock():
                     cache.current_action = agent.state_to_action(
                         self._model,

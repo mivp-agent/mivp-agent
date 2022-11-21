@@ -4,6 +4,7 @@ from mivp_agent.messages import MissionMessage
 
 from .state import FAKE_PAUSE_STATE, FAKE_RUNNING_STATE
 
+
 def dup_message(msg: MissionMessage):
     '''
     Helper method to provide a copy of a mission message with a deepcopy of the episode_report and observation as these are dicts.
@@ -15,6 +16,7 @@ def dup_message(msg: MissionMessage):
     m.observation = deepcopy(m.observation)
 
     return m
+
 
 FAKE_PAUSE_MESSAGE = MissionMessage(
     'fake-addr',

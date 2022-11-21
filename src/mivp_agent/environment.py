@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Environment(ABC):
     def __enter__(self):
         self.setup()
