@@ -12,7 +12,7 @@ env:
   DEBUG_OUTPUT: false
 
 jobs:
-  build-n-test:
+  unit-test:
     strategy:
       matrix:
         os: [

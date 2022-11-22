@@ -2,6 +2,7 @@ import socket
 import pickle
 import struct
 import sys
+import os
 
 from mivp_agent.util.validate import validateInstruction, validateState
 from mivp_agent.util.parse import parse_report
@@ -71,11 +72,22 @@ def send_full(connection, data):
     result = connection.sendall(packed_size+data)
     assert result is None
 
+def get_server_host_and_port(hostname="localhost", port=57721):
+    if 'AGENT_SERVER_HOSTNAME' in os.environ:
+        hostname = os.environ['AGENT_SERVER_HOSTNAME']
+    if 'AGENT_SERVER_PORT' in os.environ:
+        port = os.environ['AGENT_SERVER_PORT']
+        if isinstance(port, str):
+            port = int(port)
+
+    return hostname, port
 
 class ModelBridgeServer:
     def __init__(self, hostname="localhost", port=57721, max_listen=None):
-        self.host = hostname
-        self.port = port
+        self.host, self.port = get_server_host_and_port(
+            hostname=hostname,
+            port=port
+        )
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Line below reuses the socket address if previous socket closed but improperly
@@ -145,8 +157,10 @@ class ModelBridgeServer:
 
 class ModelBridgeClient:
     def __init__(self, hostname="localhost", port=57721):
-        self.host = hostname
-        self.port = port
+        self.host, self.port = get_server_host_and_port(
+            hostname=hostname,
+            port=port
+        )
 
         self._socket = None
 
