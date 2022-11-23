@@ -4,7 +4,6 @@ from threading import Lock
 
 from mivp_agent.manager import MissionManager
 from mivp_agent.agent import Agent
-from mivp_agent.environment import Environment
 
 
 @dataclass
@@ -33,14 +32,12 @@ class Driver:
     def __init__(
         self,
         agent_template: Agent,
-        environment: Environment = None,
         expect_agents: int = None,
         log: bool = True,
     ) -> None:
         self._agent_template = agent_template
         self._model = self._agent_template.build_model()
 
-        self._environment = environment
         self._expect_agents = expect_agents
         self._log = log
 
@@ -56,9 +53,6 @@ class Driver:
     def __enter__(self):
         if not self._context_lock.acquire(False):
             raise RuntimeError('Only one context acquisition allowed on Driver instances')
-
-        if self._environment:
-            self._environment.__enter__()
 
         self._mgr.__enter__()
         return self
@@ -174,9 +168,6 @@ class Driver:
         return batch
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self._environment:
-            self._environment.__exit__()
-
         self._mgr.__exit__()
 
         self._context_lock.release()

@@ -1,0 +1,34 @@
+FROM ubuntu:18.04
+LABEL maintainer = Carter Fendley (http://carterfendley.com)
+
+# ================================== #
+# Install system dependencies
+# ================================== #
+
+# Some apt-get install will pause for user input if the following is not set
+ENV DEBIAN_FRONTEND="noninteractive"
+
+# Core dependencies 
+RUN apt-get update && apt-get install -y sudo python3.7-dev python3-pip 
+# Add utilities
+RUN apt-get install -y git vim emacs-nox tmux
+
+# Clean up any caches that installations made, makes total docker image size smaller.
+RUN apt-get clean
+
+# ================================== #
+# Configure python / pip
+# ================================== #
+# Okay... little bit about the below! There is an underlying python3 version that comes with the docker container this is FROM. So here we set the default python3 to be python3.7. This makes sure that any hash bangs in files will be run by the python which we are installing mivp_agent for.
+RUN update-alternatives --install /usr/bin/python3 python3 $(which python3.7) 10
+# Then, more recent pip packages have stopped distributing wheels for the `manylinux1` platform tag in favor of the `manylinux2010` tag which is only available from pip versions >=19.0. Without upgrading, as done below, the pip version will be around 9.0.x from the apt repos and will be forced to, very slowly, build wheels manually. More on platform tags here: https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/
+RUN python3 -m pip install --upgrade pip
+# Finally, this will create a mismatch between pip and the wrapper that runs the `pip3` command from the console. If run from this method it will print warnings to console and according to these warnings it will eventually break. Thus, below I use `python3 -m pip install ....` to install packages so everyone is happy and no yelling goes on in the console. ore here: https://github.com/pypa/pip/issues/5599
+
+# ================================== #
+# Install the mivp-agent package
+# ================================== #
+# Temporary clone until I get it on PyPI
+RUN git clone https://github.com/mivp-agent/mivp-agent.git
+# Editable mode so I can mount a local volume during development
+RUN python3 -m pip install -e ./mivp-agent
