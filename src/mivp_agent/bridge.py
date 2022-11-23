@@ -72,6 +72,7 @@ def send_full(connection, data):
     result = connection.sendall(packed_size+data)
     assert result is None
 
+
 def get_server_host_and_port(hostname="localhost", port=57721):
     if 'AGENT_SERVER_HOSTNAME' in os.environ:
         hostname = os.environ['AGENT_SERVER_HOSTNAME']
@@ -81,6 +82,7 @@ def get_server_host_and_port(hostname="localhost", port=57721):
             port = int(port)
 
     return hostname, port
+
 
 class ModelBridgeServer:
     def __init__(self, hostname="localhost", port=57721, max_listen=None):
