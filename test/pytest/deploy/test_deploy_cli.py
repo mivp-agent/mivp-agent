@@ -1,7 +1,7 @@
 import os
 import pytest
 from argparse import ArgumentParser
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from mivp_agent.deploy import Task, Environment
 from mivp_agent.cli.deploy import DeployCLI
@@ -38,15 +38,15 @@ class FakeTask(Task):
     def get_callable(self):
         return fake_callable
 
-
-def test_subparser_validation():
+@patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
+def test_subparser_validation(mock_docker):
     cli = DeployCLI(ArgumentParser())
     with pytest.raises(SystemExit) as e:
         cli.do_it({})
     assert e.value.code == 1
 
-
-def test_basic():
+@patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
+def test_basic(mock_docker):
     setup = Mock()
     teardown = Mock()
     args = {
