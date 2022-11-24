@@ -38,12 +38,14 @@ class FakeTask(Task):
     def get_callable(self):
         return fake_callable
 
+
 @patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
 def test_subparser_validation(mock_docker):
     cli = DeployCLI(ArgumentParser())
     with pytest.raises(SystemExit) as e:
         cli.do_it({})
     assert e.value.code == 1
+
 
 @patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
 def test_basic(mock_docker):
