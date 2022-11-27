@@ -75,7 +75,11 @@ class Task(Deployable):
 
         callable_name = self.get_callable().__name__
         file_name = os.path.basename(self._get_subclass_file())
-        command = f'agnt run {file_name} {callable_name} --args {self._args_dumps(kwargs)}'
+        command = f'agnt run {file_name} {callable_name}'
+
+        args = self._args_dumps(kwargs)
+        if args is not None:
+            command += f' --args {args}'
 
         return command
     
