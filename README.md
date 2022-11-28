@@ -31,14 +31,14 @@ Pull requests are very welcome for bug fixes and feature additions. The only req
 1. If you intended to add a feature, please open a issue on this repository first so a discussion can be had.
 2. Run the testing a linting before submitting a PR (they will be run automatically by GitHub too)
 
-## Running tests
+### Running tests
 
 ```
-cd test
-./test_all.py
+pytest
+cd test/unittest && ./test_all.py
 ```
 
-## Running the linter
+### Running the linter
 
 ```
 flake8 src test
