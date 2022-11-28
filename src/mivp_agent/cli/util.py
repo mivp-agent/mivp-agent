@@ -77,3 +77,17 @@ def human_bytes(size):
         return size, 'ERROR'
 
     return round(size, 2), POWER_LABELS[n]
+
+
+def parse_kv_pairs(pairs):
+    pairs_dict = {}
+    if pairs:
+        for pair in pairs:
+            items = pair.split('=')
+            if len(items) < 0:
+                raise RuntimeError(f'Found non key-value pair: "{pair}" please use "=" to delimit key-value pairs (no spaces allowed in keys or pairs).')
+            key = items[0].strip('')
+            value = '='.join(items[1:])
+            
+            pairs_dict[key] = value
+    return pairs_dict

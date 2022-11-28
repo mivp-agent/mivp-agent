@@ -5,11 +5,13 @@ from .info import Info
 from .log import Log
 from .inspect.inspector import Inspector
 from .deploy import DeployCLI
+from .run import RunCLI
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()
 
 DeployCLI(subparsers.add_parser('deploy'))
+RunCLI(subparsers.add_parser('run'))
 Info(subparsers.add_parser('info'))
 Log(subparsers.add_parser('log'))
 Inspector(subparsers.add_parser('inspect'))

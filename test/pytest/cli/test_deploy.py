@@ -52,8 +52,8 @@ def test_basic(mock_docker):
     setup = Mock()
     teardown = Mock()
     args = {
-        'env_args': 'ekey1=evalue1 ekey2=evalue2',
-        'task_args': 'tkey1=tvalue1 tkey2=tvalue2',
+        'env_args': ['ekey1=evalue1', 'ekey2=evalue2'],
+        'task_args': ['tkey1=tvalue1', 'tkey2=tvalue2'],
         'setup': setup,
         'teardown': teardown,
         'task_file': CURRENT_FILE

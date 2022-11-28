@@ -1,11 +1,14 @@
 import os, sys
 import inspect
+import traceback
 import importlib.util
 from argparse import ArgumentParser, Namespace
 
 from mivp_agent.deploy import Task
 from mivp_agent.deploy.deployment import Deployment
 from mivp_agent.deploy.deployments import DockerDeployment
+
+from .util import parse_kv_pairs
 
 
 class DeployCLI:
@@ -44,8 +47,8 @@ class DeployCLI:
             metavar="KEY=VALUE",
             nargs="+",
             required=False,
-            default={},
-            help="Use --env-args followed by any number of KEY=VALUE pairs which will be passed to the **kwargs of the Environment."
+            default=None,
+            help="Use --env-args followed by any number of KEY=VALUE pairs which will be passed to the `**kwargs` of the Environment."
         )
 
         subparser.add_argument(
@@ -53,26 +56,12 @@ class DeployCLI:
             metavar="KEY=VALUE",
             nargs="+",
             required=False,
-            default={},
-            help="Use --task-args followed by any number of KEY=VALUE pairs which will be passed to the **kwargs of the Task."
+            default=None,
+            help="Use --task-args followed by any number of KEY=VALUE pairs which will be passed to the `**kwargs` of the Task."
         )
 
         # Allow deployment to add arguments
         deployment._configure_parser(subparser)
-    
-    def _parse_key_value_pair(self, pairs):
-        pairs_dict = {}
-        if pairs:
-            pairs = pairs.split() # Split on white space.
-            for pair in pairs:
-                items = pair.split('=')
-                if len(items) < 0:
-                    raise RuntimeError(f'Found non key-value pair: "{pair}" please use "=" to delimit key-value pairs (no spaces allowed in keys or pairs).')
-                key = items[0].strip('')
-                value = '='.join(items[1:])
-                
-                pairs_dict[key] = value
-        return pairs_dict
     
     def _load_task_cls(self, args):
         '''
@@ -116,12 +105,23 @@ class DeployCLI:
         task_cls, task_path = self._load_task_cls(args)
 
         # Parse out the env and task arguments
-        env_args = self._parse_key_value_pair(args['env_args'])
-        task_args = self._parse_key_value_pair(args['task_args'])
+        env_args = parse_kv_pairs(args['env_args'])
+        task_args = parse_kv_pairs(args['task_args'])
 
         # Construct the task and environment
-        task: Task = task_cls(file_path=task_path, **task_args)
-        env = task.get_environment(**env_args)
+        try:
+            task: Task = task_cls(file_path=task_path, **task_args)
+        except TypeError:
+            traceback.print_exc()
+            print('\nError: Type error received while calling __init__(). If you have added --task-args this may indicate your __init__ function does not have **kwargs in the parameter list.', file=sys.stderr)
+            exit(1)
+
+        try:
+            env = task.get_environment(**env_args)
+        except TypeError:
+            traceback.print_exc()
+            print('\nError: Type error received while calling get_environment(). If you have added --env-args this may indicate your function does not have **kwargs in the parameter list.', file=sys.stderr)
+            exit(1)
 
         # Run deployment
         args['setup'](args, task, env)
