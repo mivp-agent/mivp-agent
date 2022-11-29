@@ -30,9 +30,10 @@ class DockerDeployment(Deployment):
 
     def configure_parser(self, parser: ArgumentParser):
         parser.add_argument(
-            '--rebuild', 
+            '--rebuild',
             action='store_true',
-            help='This option can be used to force the rebuilding of images managed mivp-agent.')
+            help='This option can be used to force the rebuilding of images managed mivp-agent.'
+        )
 
         return super().configure_parser(parser)
 
