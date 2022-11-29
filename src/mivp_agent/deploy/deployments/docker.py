@@ -5,6 +5,7 @@ from mivp_agent.util.log_presenter import LogPresenter
 
 import os
 import time
+from halo import Halo
 from queue import Queue, Empty
 from threading import Thread
 import docker
@@ -23,6 +24,9 @@ class DockerDeployment(Deployment):
         self._presenter = LogPresenter()
         self._log_queue = Queue()
         self._shutdown_signal = False
+
+        self.task_container = None
+        self.env_container = None
 
     def configure_parser(self, parser: ArgumentParser):
         parser.add_argument(
@@ -80,32 +84,31 @@ class DockerDeployment(Deployment):
             tty=True
         )
     
-    def _log_consumer(self, name, container):
+    def _log_consumer(self, name, log_generator):
         '''
         This function is used within a thread to provide a non-blocking way to get the `next(generator)` value. Messages are put in the `_log_queue` to be read by the main thread.
         '''
-        generator = container.attach(logs=True, stream=True)
         while not self._shutdown_signal:
             try:
-                text = next(generator)
+                text = next(log_generator)
                 self._log_queue.put((name, text.decode()))
             except StopIteration:
                 self._log_queue.put((name, '!! End of stream received !!\n'))
                 break
 
     def setup(self, args: dict, task: Task, environment: Environment):
-        task_container = self._create_task_container(task, args['rebuild'])
-        task_container.start()
-        task_ip = self._get_ip(task_container)
+        self.task_container = self._create_task_container(task, args['rebuild'])
+        self.task_container.start()
+        task_ip = self._get_ip(self.task_container)
 
-        env_container = self._create_env_container(environment, task_ip, args['rebuild'])
-        env_container.start()
+        self.env_container = self._create_env_container(environment, task_ip, args['rebuild'])
+        self.env_container.start()
 
         task_log_consumer = Thread(
             target=self._log_consumer,
             args=(
                 'task',
-                task_container
+                self.task_container.attach(logs=True, stream=True)
             ),
             daemon=True
         )
@@ -113,7 +116,7 @@ class DockerDeployment(Deployment):
             target=self._log_consumer,
             args=(
                 'env',
-                env_container,
+                self.env_container.attach(logs=True, stream=True),
             ),
             daemon=True
         )
@@ -131,4 +134,18 @@ class DockerDeployment(Deployment):
                     time.sleep(0.1)
 
     def teardown(self, args: Namespace, task: Task, environment: Environment):
-        pass
+        if self.task_container is not None:
+            with Halo(text='Stopping task container...', spinner='dots') as s:
+                self.task_container.stop()
+                s.succeed()
+            with Halo(text='Removing task container...', spinner='dots') as s:
+                self.task_container.remove()
+                s.succeed()
+
+        if self.env_container is not None:
+            with Halo(text='Stopping environment container...', spinner='dots') as s:
+                self.env_container.stop()
+                s.succeed()
+            with Halo(text='Removing environment container...', spinner='dots') as s:
+                self.env_container.remove()
+                s.succeed()
