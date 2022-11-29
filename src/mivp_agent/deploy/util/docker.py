@@ -20,9 +20,13 @@ def parse_name(name, default_tag='latest'):
     raise RuntimeError('Expected format "name" or "name:tag" not found.')
 
 
-def get_or_build(name):
+def get_or_build(name, rebuild=False):
     client = docker.from_env()
     raw_name, tag = parse_name(name)
+
+    if rebuild and raw_name in DOCKERFILE_NAMES:
+        return build_image(name)
+
     try:
         return client.images.get(f'{raw_name}:{tag}')
     except docker.errors.ImageNotFound:
@@ -40,14 +44,14 @@ def build_image(name):
 
     try:
         spinner.start()
-        image = client.images.build(
+        image, _ = client.images.build(
             path=DOCKERFILES_DIR,
             dockerfile=dockerfile,
             tag=f'{raw_name}:{tag}'
         )
+        spinner.succeed()
         return image
     except docker.errors.BuildError as e:
         print(f'\n\nFailed to build docker image. You can see more detailed output by running `docker build -f {dockerfile} {DOCKERFILES_DIR}` manually', file=sys.stderr)
+        spinner.fail()
         raise e
-    finally:
-        spinner.stop()

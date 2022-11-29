@@ -25,6 +25,11 @@ class DockerDeployment(Deployment):
         self._shutdown_signal = False
 
     def configure_parser(self, parser: ArgumentParser):
+        parser.add_argument(
+            '--rebuild', 
+            action='store_true',
+            help='This option can be used to force the rebuilding of images managed mivp-agent.')
+
         return super().configure_parser(parser)
 
     def _get_ip(self, container) -> str:
@@ -37,8 +42,8 @@ class DockerDeployment(Deployment):
         if ip == '':
             raise RuntimeError(f'Failed to get IP from container {container.id}')
 
-    def _create_task_container(self, task: Task):
-        image = get_or_build(task.get_image())
+    def _create_task_container(self, task: Task, rebuild):
+        image = get_or_build(task.get_image(), rebuild=rebuild)
 
         abs_directory = os.path.abspath(task.get_directory())
 
@@ -57,8 +62,8 @@ class DockerDeployment(Deployment):
 
         return container
     
-    def _create_env_container(self, env: Environment, task_ip):
-        image = get_or_build(env.get_image())
+    def _create_env_container(self, env: Environment, task_ip, rebuild):
+        image = get_or_build(env.get_image(), rebuild=rebuild)
 
         abs_directory = os.path.abspath(env.get_directory())
 
@@ -88,12 +93,12 @@ class DockerDeployment(Deployment):
                 self._log_queue.put((name, '!! End of stream received !!\n'))
                 break
 
-    def setup(self, args: Namespace, task: Task, environment: Environment):
-        task_container = self._create_task_container(task)
+    def setup(self, args: dict, task: Task, environment: Environment):
+        task_container = self._create_task_container(task, args['rebuild'])
         task_container.start()
         task_ip = self._get_ip(task_container)
 
-        env_container = self._create_env_container(environment, task_ip)
+        env_container = self._create_env_container(environment, task_ip, args['rebuild'])
         env_container.start()
 
         task_log_consumer = Thread(

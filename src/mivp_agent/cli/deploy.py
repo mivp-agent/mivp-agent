@@ -124,5 +124,9 @@ class DeployCLI:
             exit(1)
 
         # Run deployment
-        args['setup'](args, task, env)
+        try:
+            args['setup'](args, task, env)
+        except KeyboardInterrupt:
+            print('\nReceived keyboard interrupt, running teardown method...')
+        
         args['teardown'](args, task, env)

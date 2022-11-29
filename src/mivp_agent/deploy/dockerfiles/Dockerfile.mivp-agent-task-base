@@ -28,7 +28,8 @@ RUN python3 -m pip install --upgrade pip
 # ================================== #
 # Install the mivp-agent package
 # ================================== #
-# Temporary clone until I get it on PyPI
-RUN git clone https://github.com/mivp-agent/mivp-agent.git
+# Clone in standard directory so it can be mounted when container is run
+RUN mkdir /packages
+RUN cd /packages && git clone https://github.com/mivp-agent/mivp-agent.git
 # Editable mode so I can mount a local volume during development
-RUN python3 -m pip install -e ./mivp-agent
+RUN cd /packages && python3 -m pip install -e ./mivp-agent
