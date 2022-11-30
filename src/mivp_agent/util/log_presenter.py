@@ -94,7 +94,7 @@ class LogPresenter:
 
         # Add previous cached text if there is any
         if len(data.cached_text) != 0:
-            first_line += data.cached_text
+            first_line = data.cached_text + first_line
 
         self._print(source, first_line, data.color)
         data.cached_text = last_line
