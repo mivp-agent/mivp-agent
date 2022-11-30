@@ -41,7 +41,6 @@ def test_directory():
 
 
 def test_command():
-    t = ValidTask()
     expected_command = 'agnt run test_task.py my_callable'
     expected_command += ' --args key1=value1 key2=value2'
 
@@ -50,4 +49,5 @@ def test_command():
         'key2': 'value2'
     }
 
-    assert t.get_command(**kwargs) == expected_command
+    t = ValidTask(**kwargs)
+    assert t.get_command() == expected_command
