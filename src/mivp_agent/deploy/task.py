@@ -22,9 +22,14 @@ class Task(Deployable):
         instance = super(Task, cls).__new__(cls)
         if 'file_path' in kwargs:
             instance._file_path = kwargs['file_path']
+            # Don't need to pass this to `agnt run`
+            del kwargs['file_path']
         else:
             instance._file_path = None
-        
+
+        # Store kwargs for `get_command()`
+        instance.kwargs = kwargs
+
         return instance
 
     @abstractmethod
@@ -65,7 +70,7 @@ class Task(Deployable):
         
         return string
 
-    def get_command(self, **kwargs) -> str:
+    def get_command(self) -> str:
         '''
         This method constructs a command through the use of the `agnt run` helper command. It should be run inside the directory provided by `get_directory(...)` in the deployment.
 
@@ -77,7 +82,7 @@ class Task(Deployable):
         file_name = os.path.basename(self._get_subclass_file())
         command = f'agnt run {file_name} {callable_name}'
 
-        args = self._args_dumps(kwargs)
+        args = self._args_dumps(self.kwargs)
         if args is not None:
             command += f' --args {args}'
 
