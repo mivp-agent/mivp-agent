@@ -13,6 +13,7 @@ from docker.client import DockerClient
 from argparse import ArgumentParser, Namespace
 
 DEPLOYABLE_DIRECTORY = "/data/deployable"
+MIVP_AGENT_PKG_DIRECTORY = "/packages/mivp-agent"
 
 
 class DockerDeployment(Deployment):
@@ -42,6 +43,13 @@ class DockerDeployment(Deployment):
             help='This option can be used to force the rebuilding of images managed mivp-agent.'
         )
 
+        parser.add_argument(
+            '--dev',
+            required=False,
+            default=None,
+            help='This option is used to specify a local path to mivp-agnt to mount in the container.'
+        )
+
         return super().configure_parser(parser)
 
     def _get_ip(self, container) -> str:
@@ -53,9 +61,16 @@ class DockerDeployment(Deployment):
         ip = updated_container.attrs['NetworkSettings']['IPAddress']
         if ip == '':
             raise RuntimeError(f'Failed to get IP from container {container.id}')
+    
+    def _construct_volumes(self, abs_deployable, dev_package=None):
+        volumes = [f'{abs_deployable}:{DEPLOYABLE_DIRECTORY}',]
+        if dev_package:
+            volumes.append(f'{dev_package}:{MIVP_AGENT_PKG_DIRECTORY}')
 
-    def _create_task_container(self, task: Task, rebuild):
-        image = get_or_build(task.get_image(), rebuild=rebuild)
+        return volumes
+
+    def _create_task_container(self, task: Task, args: dict):
+        image = get_or_build(task.get_image(), rebuild=args['rebuild'])
 
         abs_directory = os.path.abspath(task.get_directory())
 
@@ -68,14 +83,17 @@ class DockerDeployment(Deployment):
             environment={
                 'AGENT_SERVER_HOST': '0.0.0.0'
             },
-            volumes=[f'{abs_directory}:{DEPLOYABLE_DIRECTORY}',],
+            volumes=self._construct_volumes(
+                abs_directory,
+                dev_package=args['dev']
+            ),
             tty=True
         )
 
         return container
     
-    def _create_env_container(self, env: Environment, task_ip, rebuild):
-        image = get_or_build(env.get_image(), rebuild=rebuild)
+    def _create_env_container(self, env: Environment, task_ip, args: dict):
+        image = get_or_build(env.get_image(), rebuild=args['rebuild'])
 
         abs_directory = os.path.abspath(env.get_directory())
 
@@ -88,7 +106,10 @@ class DockerDeployment(Deployment):
             environment={
                 'AGENT_SERVER_HOST': task_ip
             },
-            volumes=[f'{abs_directory}:{DEPLOYABLE_DIRECTORY}',],
+            volumes=self._construct_volumes(
+                abs_directory,
+                dev_package=args['dev']
+            ),
             tty=True
         )
     
@@ -104,12 +125,27 @@ class DockerDeployment(Deployment):
                 self._log_queue.put((name, '!! End of stream received !!\n'))
                 break
 
+    def _validate_package_path(self, path):
+        path = os.path.abspath(path)
+        if not os.path.isdir(path):
+            print('\nError: The path provided to --dev is not a directory.')
+            exit(1)
+        
+        files = os.listdir(path)
+        if 'setup.cfg' not in files or 'setup.py' not in files:
+            print('\nError: The directory passed to --dev must contain both "setup.cfg" and "setup.py".')
+            exit(1)
+
     def setup(self, args: dict, task: Task, environment: Environment):
-        self.task_container = self._create_task_container(task, args['rebuild'])
+        # Validate dev path important to do before setup b/c the function will exit without calling tear down
+        if args['dev'] is not None:
+            self._validate_package_path(args['dev'])
+
+        self.task_container = self._create_task_container(task, args)
         self.task_container.start()
         task_ip = self._get_ip(self.task_container)
 
-        self.env_container = self._create_env_container(environment, task_ip, args['rebuild'])
+        self.env_container = self._create_env_container(environment, task_ip, args)
         self.env_container.start()
 
         task_log_consumer = Thread(
