@@ -20,13 +20,20 @@ class DockerDeployment(Deployment):
     The `DockerDeployment`
     '''
     def __init__(self) -> None:
-        self.client: DockerClient = docker.from_env()
         self._presenter = LogPresenter()
         self._log_queue = Queue()
         self._shutdown_signal = False
 
         self.task_container = None
         self.env_container = None
+
+        self._client: DockerClient = None
+    
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = docker.from_env()
+        return self._client
 
     def configure_parser(self, parser: ArgumentParser):
         parser.add_argument(
