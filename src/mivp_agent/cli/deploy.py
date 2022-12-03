@@ -71,10 +71,14 @@ class DeployCLI:
         '''
         # Because we don't know which task to launch before runtime (or even the set of tasks that can be run)
         task_path = os.path.abspath(args['task_file'])
+        assert os.path.isfile(task_path), 'The path specified by `task-path` is not a file, please check the CLI usage.'
+
         task_spec = importlib.util.spec_from_file_location(
             'dynamic_task', # pathlib.Path(task_path).stem,
             task_path
         )
+        assert task_spec is not None, 'No ModuleSpec could be loaded from the `task-file` path specified. This may indicate the file is not a valid python file.'
+        
         task_module = importlib.util.module_from_spec(task_spec)
         task_spec.loader.exec_module(task_module)
 
@@ -102,7 +106,13 @@ class DeployCLI:
             exit(1)
 
         # Dynamically load the task from specified file (might Error)
-        task_cls, task_path = self._load_task_cls(args)
+        try:
+            task_cls, task_path = self._load_task_cls(args)
+        except:
+            traceback.print_exc()
+
+            print('\nError: Deploy CLI could not load the task specified in your command. Please see the error above.', file=sys.stderr)
+            exit(1)
 
         # Parse out the env and task arguments
         env_args = parse_kv_pairs(args['env_args'])

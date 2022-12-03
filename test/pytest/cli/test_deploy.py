@@ -7,7 +7,7 @@ from mivp_agent.deploy import Task, Environment
 from mivp_agent.cli.deploy import DeployCLI
 
 CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
-
+CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
 class FakeEnvironment(Environment):
     _CUSTOM_ID = 'FAKE_ENVIRONMENT_123023'
@@ -38,12 +38,46 @@ class FakeTask(Task):
     def get_callable(self):
         return fake_callable
 
-
+# TODO: Need the following patch anymore after deferred docker client initialization
 @patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
 def test_subparser_validation(mock_docker):
+    '''
+    This method tests if the deployment command has been set properly. For example `agnt deploy docker task.py` is a valid usage while `agnt deploy task.py` is not.
+    '''
     cli = DeployCLI(ArgumentParser())
     with pytest.raises(SystemExit) as e:
         cli.do_it({})
+    assert e.value.code == 1
+
+@pytest.mark.parametrize('task_path, expected_error', [
+    (os.path.join(CURRENT_DIR, 'not_a_directory'), 'The path specified by `task-path` is not a file, please check the CLI usage.'),
+    (os.path.join(CURRENT_DIR, 'res/not_python.txt'), 'No ModuleSpec could be loaded from the `task-file` path specified. This may indicate the file is not a valid python file.'),
+    (os.path.join(CURRENT_DIR, 'res/import_issue.py'), "No module named 'not_an_actual_module'"),
+    (os.path.join(CURRENT_DIR, 'res/syntax_issue.py'), "invalid syntax")
+])
+def test_dynamic_import_failure(capsys, task_path, expected_error):
+    setup = Mock()
+    teardown = Mock()
+    args = {
+        'task_file': task_path,
+        'setup': setup,
+        'teardown': teardown
+    }
+    cli = DeployCLI(ArgumentParser())
+    with pytest.raises(SystemExit) as e:
+        cli.do_it(args)
+    
+
+    captured = capsys.readouterr()
+    print(captured.err) # For ease of debugging when there are errors
+    
+    # Find error that is specific to type of issue
+    issue_message_idx = captured.err.find(expected_error)
+    assert issue_message_idx != -1
+
+    exit_message_idx = captured.err.find('Error: Deploy CLI could not load the task specified in your command. Please see the error above.')
+    assert exit_message_idx != -1
+    assert issue_message_idx < exit_message_idx
     assert e.value.code == 1
 
 

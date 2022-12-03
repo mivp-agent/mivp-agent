@@ -47,7 +47,7 @@ class DockerDeployment(Deployment):
             '--dev',
             required=False,
             default=None,
-            help='This option is used to specify a local path to mivp-agnt to mount in the container.'
+            help='This option is used to specify a local path to mivp-agent to mount in the container.'
         )
 
         return super().configure_parser(parser)
