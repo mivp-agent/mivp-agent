@@ -4,10 +4,12 @@ import subprocess
 CURRENT_FILE = os.path.realpath(__file__)
 CURRENT_DIR = os.path.abspath(os.path.dirname(CURRENT_FILE))
 
+
 def decode_if_bytes(obj):
     if hasattr(obj, 'decode'):
         return obj.decode()
     return obj
+
 
 def test_docker():
     task_file = os.path.join(
@@ -34,7 +36,6 @@ def test_docker():
     ]
     env_output = [f'env | {out}' for out in env_output]
     
-
     p = subprocess.Popen(deploy_command.split(), stdout=subprocess.PIPE)
     stdout, stderr = p.communicate(timeout=180)
     

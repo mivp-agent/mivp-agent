@@ -1,6 +1,7 @@
 import os
 from mivp_agent.deploy import Environment
 
+
 class ExampleEnvironment(Environment):
     def get_directory(self) -> str:
         '''Most of the time you will want to bring some resources into the docker container, all commands will be run in the path specified by this function.
