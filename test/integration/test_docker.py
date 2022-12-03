@@ -37,7 +37,7 @@ def test_docker():
     env_output = [f'env | {out}' for out in env_output]
     
     p = subprocess.Popen(deploy_command.split(), stdout=subprocess.PIPE)
-    stdout, stderr = p.communicate(timeout=180)
+    stdout, stderr = p.communicate(timeout=360)
     
     stdout = decode_if_bytes(stdout)
     stderr = decode_if_bytes(stderr)
