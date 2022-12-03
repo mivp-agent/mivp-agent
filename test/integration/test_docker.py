@@ -24,6 +24,7 @@ def test_docker_build():
     get_or_build('mivp-agent-task-base')
     get_or_build('mivp-agent-env-base')
 
+
 @pytest.mark.run(after='test_docker_build')
 def test_docker():
     task_file = os.path.join(
