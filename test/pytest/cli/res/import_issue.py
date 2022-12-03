@@ -1,1 +1,1 @@
-import not_an_actual_module
+import not_an_actual_module # noqa: F401

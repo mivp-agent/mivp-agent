@@ -108,7 +108,7 @@ class DeployCLI:
         # Dynamically load the task from specified file (might Error)
         try:
             task_cls, task_path = self._load_task_cls(args)
-        except:
+        except: # noqa: E722
             traceback.print_exc()
 
             print('\nError: Deploy CLI could not load the task specified in your command. Please see the error above.', file=sys.stderr)

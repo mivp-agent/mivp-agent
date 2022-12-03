@@ -9,6 +9,7 @@ from mivp_agent.cli.deploy import DeployCLI
 CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
 CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
+
 class FakeEnvironment(Environment):
     _CUSTOM_ID = 'FAKE_ENVIRONMENT_123023'
 
@@ -38,6 +39,7 @@ class FakeTask(Task):
     def get_callable(self):
         return fake_callable
 
+
 # TODO: Need the following patch anymore after deferred docker client initialization
 @patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
 def test_subparser_validation(mock_docker):
@@ -48,6 +50,7 @@ def test_subparser_validation(mock_docker):
     with pytest.raises(SystemExit) as e:
         cli.do_it({})
     assert e.value.code == 1
+
 
 @pytest.mark.parametrize('task_path, expected_error', [
     (os.path.join(CURRENT_DIR, 'not_a_directory'), 'The path specified by `task-path` is not a file, please check the CLI usage.'),
@@ -66,7 +69,6 @@ def test_dynamic_import_failure(capsys, task_path, expected_error):
     cli = DeployCLI(ArgumentParser())
     with pytest.raises(SystemExit) as e:
         cli.do_it(args)
-    
 
     captured = capsys.readouterr()
     print(captured.err) # For ease of debugging when there are errors
