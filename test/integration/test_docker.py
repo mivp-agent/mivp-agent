@@ -1,5 +1,9 @@
 import os
+import pytest
 import subprocess
+
+from mivp_agent.deploy.util.docker import get_or_build
+
 
 CURRENT_FILE = os.path.realpath(__file__)
 CURRENT_DIR = os.path.abspath(os.path.dirname(CURRENT_FILE))
@@ -11,6 +15,16 @@ def decode_if_bytes(obj):
     return obj
 
 
+def test_docker_build():
+    '''
+    This test builds both images required for the following test, don't want to do this in `agnt deploy` for two reasons
+    1. Hard to view the output of the image building incrementally via `Popen.communicate` (want to be able to see progress)
+    2. The timeout on `Popen.communicate(...)` was causing the GitHub runners to fail as they need to build the image from scratch each time.
+    '''
+    get_or_build('mivp-agent-task-base')
+    get_or_build('mivp-agent-env-base')
+
+@pytest.mark.run(after='test_docker_build')
 def test_docker():
     task_file = os.path.join(
         CURRENT_DIR,
