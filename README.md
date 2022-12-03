@@ -34,8 +34,7 @@ Pull requests are very welcome for bug fixes and feature additions. The only req
 ### Running tests
 
 ```
-pytest
-cd test/unittest && ./test_all.py
+./test/run.sh
 ```
 
 ### Running the linter
