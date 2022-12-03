@@ -1,0 +1,21 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main, actions ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install mivp_agent
+      run: pip3 install .
+    - name: Install mivp_agent testing deps
+      run: pip3 install .[test]
+    - name: Run integration tests
+      run: ./test/run.sh --integration
