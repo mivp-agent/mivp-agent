@@ -6,6 +6,7 @@ from mivp_agent.cli.run import RunCLI
 
 
 CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
+CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
 
 @patch('mivp_agent.cli.run.importlib.util.module_from_spec')
@@ -44,3 +45,24 @@ def test_basic(spec_from_file_location, module_from_spec):
         key1='value1',
         key2='value2'
     )
+
+
+def test_real_file(capsys):
+    '''
+    This part is testing
+    1. A valid callable will be called correctly.
+    2. Relative imports will work after sys.path.append(...)
+    '''
+
+    args = {
+        'python_file': os.path.join(CURRENT_DIR, 'res/valid_callable.py'),
+        'python_callable': 'callable',
+        'args': None
+    }
+
+    parser = ArgumentParser()
+    cli = RunCLI(parser)
+    cli.do_it(args)
+
+    captured = capsys.readouterr()
+    assert captured.out == 'Hello friend!\n'

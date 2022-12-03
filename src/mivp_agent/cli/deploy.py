@@ -8,7 +8,7 @@ from mivp_agent.deploy import Task
 from mivp_agent.deploy.deployment import Deployment
 from mivp_agent.deploy.deployments import DockerDeployment
 
-from .util import parse_kv_pairs
+from .util import parse_kv_pairs, patch_dynamic_sys_path
 
 
 class DeployCLI:
@@ -72,6 +72,8 @@ class DeployCLI:
         # Because we don't know which task to launch before runtime (or even the set of tasks that can be run)
         task_path = os.path.abspath(args['task_file'])
         assert os.path.isfile(task_path), 'The path specified by `task-path` is not a file, please check the CLI usage.'
+
+        patch_dynamic_sys_path(task_path)
 
         task_spec = importlib.util.spec_from_file_location(
             'dynamic_task', # pathlib.Path(task_path).stem,
