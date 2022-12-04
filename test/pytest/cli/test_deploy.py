@@ -15,8 +15,6 @@ CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
 CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
 
-# TODO: Need the following patch anymore after deferred docker client initialization
-@patch('mivp_agent.deploy.deployments.docker.docker') # MacOS runners don't have a docker client, so mock docker.from_env()
 def test_subparser_validation(mock_docker):
     '''
     This method tests if the deployment command has been set properly. For example `agnt deploy docker task.py` is a valid usage while `agnt deploy task.py` is not.
