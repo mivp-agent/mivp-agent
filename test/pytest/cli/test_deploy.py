@@ -1,7 +1,7 @@
 import os
 import pytest
 from argparse import ArgumentParser
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from mivp_agent.cli.deploy import DeployCLI
 
@@ -15,7 +15,7 @@ CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
 CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
 
-def test_subparser_validation(mock_docker):
+def test_subparser_validation():
     '''
     This method tests if the deployment command has been set properly. For example `agnt deploy docker task.py` is a valid usage while `agnt deploy task.py` is not.
     '''
