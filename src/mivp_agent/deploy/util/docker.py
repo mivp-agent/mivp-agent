@@ -10,6 +10,12 @@ DOCKERFILES_DIR = os.path.abspath(DOCKERFILES_DIR)
 DOCKERFILES = [file for file in os.listdir(DOCKERFILES_DIR)]
 DOCKERFILE_NAMES = [name.split('.')[1] for name in DOCKERFILES]
 
+def get_docker_client():
+    try:
+        client = docker.from_env()
+    except docker.errors.DockerException:
+        raise RuntimeError('Error while creating docker client. Please make sure the docker engine is running.')
+    return client
 
 def parse_name(name, default_tag='latest'):
     split = name.split(':')
@@ -21,11 +27,11 @@ def parse_name(name, default_tag='latest'):
 
 
 def get_or_build(name, rebuild=False):
-    client = docker.from_env()
+    client = get_docker_client()
     raw_name, tag = parse_name(name)
 
     if rebuild and raw_name in DOCKERFILE_NAMES:
-        return build_image(name)
+        return build_image(name, nocache=True)
 
     try:
         return client.images.get(f'{raw_name}:{tag}')
@@ -35,8 +41,8 @@ def get_or_build(name, rebuild=False):
     return build_image(name)
 
 
-def build_image(name):
-    client = docker.from_env()
+def build_image(name, nocache=False):
+    client = get_docker_client()
     raw_name, tag = parse_name(name)
     dockerfile = f'Dockerfile.{raw_name}'
     full_path = os.path.join(DOCKERFILES_DIR, dockerfile)
@@ -47,7 +53,8 @@ def build_image(name):
         image, _ = client.images.build(
             path=DOCKERFILES_DIR,
             dockerfile=dockerfile,
-            tag=f'{raw_name}:{tag}'
+            tag=f'{raw_name}:{tag}',
+            nocache=nocache
         )
         spinner.succeed()
         return image
