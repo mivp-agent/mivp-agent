@@ -17,7 +17,9 @@ if [[ "$1" == "--integration" ]]; then
 elif [[ "$1" == "" ]]; then
   cd unittest && ./test_all.py
   cd ..
-  pytest pytest
+
+  cd pytests && python3 -m pytest .
+  cd ..
 else
   echo "Usage: $0 [--integration]"
 fi

@@ -10,12 +10,14 @@ DOCKERFILES_DIR = os.path.abspath(DOCKERFILES_DIR)
 DOCKERFILES = [file for file in os.listdir(DOCKERFILES_DIR)]
 DOCKERFILE_NAMES = [name.split('.')[1] for name in DOCKERFILES]
 
+
 def get_docker_client():
     try:
         client = docker.from_env()
     except docker.errors.DockerException:
         raise RuntimeError('Error while creating docker client. Please make sure the docker engine is running.')
     return client
+
 
 def parse_name(name, default_tag='latest'):
     split = name.split(':')
