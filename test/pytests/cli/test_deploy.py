@@ -26,18 +26,18 @@ def test_subparser_validation():
 
 
 @pytest.mark.parametrize('task_path, expected_error', [
-    (os.path.join(CURRENT_DIR, 'not_a_directory'), 'The path specified by `task-path` is not a file, please check the CLI usage.'),
-    (os.path.join(CURRENT_DIR, 'res/not_python.txt'), 'No ModuleSpec could be loaded from the `task-file` path specified. This may indicate the file is not a valid python file.'),
+    (os.path.join(CURRENT_DIR, 'not_a_directory'), 'The path to the task file is not a valid file path'),
+    (os.path.join(CURRENT_DIR, 'res/not_python.txt'), 'No ModuleSpec could be loaded from the task file path. This may indicate the file is not a valid python file.'),
     (os.path.join(CURRENT_DIR, 'res/import_issue.py'), "No module named 'not_an_actual_module'"),
     (os.path.join(CURRENT_DIR, 'res/syntax_issue.py'), "invalid syntax")
 ])
 def test_dynamic_import_failure(capsys, task_path, expected_error):
-    setup = Mock()
-    teardown = Mock()
+    
+    deployment = Mock()
     args = {
         'task_file': task_path,
-        'setup': setup,
-        'teardown': teardown
+        'deployment': deployment,
+        'config': None
     }
     cli = DeployCLI(ArgumentParser())
     with pytest.raises(SystemExit) as e:
@@ -57,16 +57,16 @@ def test_dynamic_import_failure(capsys, task_path, expected_error):
 
 
 def test_real_file():
-    setup = Mock()
-    teardown = Mock()
+    deployment = Mock()
     args = {
-        'env_args': ['ekey1=evalue1', 'ekey2=evalue2'],
-        'task_args': ['tkey1=tvalue1', 'tkey2=tvalue2'],
-        'setup': setup,
-        'teardown': teardown,
+        'deployment': deployment,
         'task_file': os.path.join(
             CURRENT_DIR,
             'res/valid_task.py'
+        ),
+        'config': os.path.join(
+            CURRENT_DIR,
+            'res/valid_config.json'
         )
     }
 
@@ -87,23 +87,15 @@ def test_real_file():
         - https://stackoverflow.com/questions/17179440/python-2-7-isinstance-fails-at-dynamically-imported-module-class
         '''
         assert task._CUSTOM_ID == 'VALID_TASK_123023'
-        task_args = {
-            'tkey1': 'tvalue1',
-            'tkey2': 'tvalue2'
-        }
-        assert set(task_args.items()).issubset(set(task.kwargs.items()))
+        assert task.get_value('task_param') == 3
 
         assert env._CUSTOM_ID == 'VALID_ENVIRONMENT_123023'
-        env_args = {
-            'ekey1': 'evalue1',
-            'ekey2': 'evalue2'
-        }
-        assert set(env_args.items()).issubset(set(env.kwargs.items()))
+        assert env.get_value('env_param') == 4
 
-    setup.side_effect = validate
-    teardown.side_effect = validate
+    deployment.start.side_effect = validate
+    deployment.stop.side_effect = validate
 
     cli.do_it(args)
 
-    setup.assert_called_once()
-    teardown.assert_called_once()
+    deployment.start.assert_called_once()
+    deployment.stop.assert_called_once()

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 
 from mivp_agent.deploy import Task, Environment
+from mivp_agent.tunable import Tunable
 
 
-class Deployment(ABC):
+class Deployment(ABC, Tunable):
     '''
     The `Deployment` class is meant to provide a framework where compute resources can be provisioned and the `Task` and `Environment` containers can be deployed on those resources.
 
@@ -19,9 +20,8 @@ class Deployment(ABC):
     '''
 
     def _configure_parser(self, parser: ArgumentParser):
-        # Tell the `agnt deploy` command to use this instance of setup and teardown.
-        parser.set_defaults(setup=self.setup)
-        parser.set_defaults(teardown=self.teardown)
+        # Set the this deployment as the one to use
+        parser.set_defaults(deployment=self)
 
         # Allow user to set further args
         self.configure_parser(parser)
@@ -30,10 +30,16 @@ class Deployment(ABC):
     def configure_parser(self, parser: ArgumentParser):
         pass
 
-    @abstractmethod
-    def setup(self, args: Namespace, task: Task, environment: Environment):
+    def setup(self, args: dict, task: Task, environment: Environment):
         pass
 
     @abstractmethod
-    def teardown(self, args: Namespace, task: Task, environment: Environment):
+    def start(self, args: dict, task: Task, environment: Environment):
+        pass
+
+    @abstractmethod
+    def stop(self, args: dict, task: Task, environment: Environment):
+        pass
+
+    def teardown(self, args: dict, task: Task, environment: Environment):
         pass

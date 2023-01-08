@@ -1,4 +1,5 @@
 import os
+import json
 import inspect
 from abc import abstractmethod
 
@@ -26,25 +27,33 @@ class Task(Deployable):
             del kwargs['file_path']
         else:
             instance._file_path = None
+        
+        if 'config' in kwargs:
+            instance._config = kwargs['config']
+        else:
+            instance._config = {}
 
         # Store kwargs for `get_command()`
         instance.kwargs = kwargs
 
         return instance
+    
+    def __init__(self, *args, **kwargs):
+        pass
 
     @abstractmethod
-    def get_environment(self, **kwargs) -> Environment:
+    def get_environment(self) -> Environment:
         '''
-        This method should provide the deployable `Environment` that is associated with this task.
-        
-        You may choose to optionally filter the `**kwargs` parameters before passing them to the init method of the `Environment`. In most cases, you will simply want to forward along the `**kwargs` unfiltered.
+        This method should provide a constructed `Environment` deployable that is associated with this task.
+
+        Configuration of the `Tunable`'s space will be handled immediately after it is returned.
         '''
         pass
 
     @abstractmethod
-    def get_callable(self):
+    def run(self):
         '''
-        This method should provide the python callable which will be called by `agnt run` inside the task's deployment.
+        This method will be called inside of the deployment.
         '''
         pass
 
@@ -76,15 +85,12 @@ class Task(Deployable):
 
         **NOTE:** This should not be overridden unless you know what you are doing.
         '''
-        assert callable(self.get_callable()), "The object returned by get_callable is not callable"
 
-        callable_name = self.get_callable().__name__
         file_name = os.path.basename(self._get_subclass_file())
-        command = f'agnt run {file_name} {callable_name}'
+        configs = json.dumps(self._config, separators=(',', ':')) # Make the seperators not include whitespace so the shell can interpret correctly
+        configs = configs.replace('"', '\\"') # Add single backslash so the shell does not interpret and remove the quotes will end up with '\"' output after python removes the `\\` and inserts a single `\`.
 
-        args = self._args_dumps(self.kwargs)
-        if args is not None:
-            command += f' --args {args}'
+        command = f'agnt run {file_name} {configs}'
 
         return command
     

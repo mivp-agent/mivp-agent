@@ -5,7 +5,7 @@ class Environment(Deployable):
     '''
     The `Environment` is an extremely small wrapper around the `Deployable` construct. It provides the `mivp-agent-env-base` as the default image. If you have a mission which does not require complex utilities & environment this can be used. Otherwise, think about overriding it.
 
-    **NOTE:** Any customer environment must correctly install both the `moos-ivp-agent` and `mivp-agent` packages. You will most likely want to base your image off of MOOS-IvP's offical images. Take a look at the `mivp-agent-env-base` docker file for how to do this.
+    **NOTE:** Any customer environment must correctly install both the `moos-ivp-agent` and `mivp-agent` packages. You will most likely want to base your image off of MOOS-IvP's official images. Take a look at the `mivp-agent-env-base` docker file for how to do this.
     '''
 
     def get_image(self) -> str:

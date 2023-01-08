@@ -7,9 +7,6 @@ from fake.tunables import DummyTunable1, DummyTunable2
 
 
 def test_space_validation():
-    with pytest.raises(TypeError):
-        Tunable()
-
     class BadSpace(Tunable):
         def feasible_space(self) -> Tuple[str, dict]:
             return 'blah', {'blea', 'blah'}
@@ -55,6 +52,12 @@ def test_from_config():
     assert tunable.get_value('nums') == 3
 
 
+def test_from_config_base():
+    tunable = Tunable()
+    # Testing that `from_config(...)` does not error when feasible spaces have not been set
+    tunable.from_config({})
+
+
 def test_to_config():
     tunable1 = DummyTunable1()
     tunable2 = DummyTunable2()
@@ -84,3 +87,10 @@ def test_to_config():
             'nums': 4
         }
     }
+
+
+def test_base_config():
+    tunable = Tunable()
+
+    # If no feasible space is provided, it should not be included in the config
+    assert generate_config(tunable) == {}

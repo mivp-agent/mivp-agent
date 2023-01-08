@@ -91,12 +91,3 @@ def parse_kv_pairs(pairs):
             
             pairs_dict[key] = value
     return pairs_dict
-
-
-def patch_dynamic_sys_path(file_path):
-    '''
-    Python will usually add the directory of an executed file to the `sys.path`. Because both `agnt deploy` and `agnt run` are dynamically loading files to be executed / interpreted this is done manually through this function.
-
-    **NOTE:** This should be called before the module is dynamically imported.
-    '''
-    sys.path.append(os.path.abspath(os.path.dirname(file_path)))

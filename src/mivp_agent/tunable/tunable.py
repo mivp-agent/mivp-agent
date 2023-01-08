@@ -1,11 +1,10 @@
 from typing import Tuple
-from abc import ABC, abstractmethod
 from mivp_agent.tunable.dimensions import Dimension
 
 NOT_SET = 'NOT_SET'
 
 
-class Tunable(ABC):
+class Tunable:
     def _set_vars(self):
         '''
         The following function and associated `_namespace` and `_feasible_space` properties allow for initialization of a single copy of the feasible space from the concrete implementation of `feasible_space()`. An alternative to the current pattern was to use `__init__(namespace, feasible_space)` however this requires that all implementors of Tunable and their subclasses to remember to call `super().__init__()`. I find requirements to call `__init__()` as not very intuitive to first time users. Thus, the following pattern.
@@ -25,6 +24,8 @@ class Tunable(ABC):
         except AttributeError:
             self._set_vars()
         
+        print(self.__feasible_space)
+
         return self.__feasible_space
     
     @property
@@ -48,10 +49,9 @@ class Tunable(ABC):
             self.reset_values()
         return self.__values
 
-    @abstractmethod
     def feasible_space(self) -> Tuple[str, dict]:
         '''
-        This method should be implemented to return a namespace for this tunable to use, along with the definition of the feasible space.
+        This method can be overridden a namespace for this tunable to use, along with the definition of the feasible space.
         
         Example:
         ```
@@ -61,18 +61,22 @@ class Tunable(ABC):
             return 'my-namespace', space
         ```
         '''
-        pass
+        return NOT_SET, {}
 
     def from_config(self, config: dict, reset=False):
         '''
         Takes key pairs specified by the config dictionary and runs them through `set_value(...)`.
 
-        If kwarg `reset` is set to `True` all existing values will be reset before being loaded from the config
+        If kwarg `reset` is set to `True` all existing values will be reset before being loaded from the config.
+
+        **NOTE:** If the dict config does jot contain a top level key matching the tunable's namespace OR if this tunable's namespace is not set, this method will return immediately.
         '''
+        if self._namespace == NOT_SET or self._namespace not in config:
+            return
+
         if reset:
             self.reset_values()
 
-        assert self._namespace in config, f'Provided config does not contain the "{self._namespace}" namespace associated with this tunable'
         assert isinstance(config[self._namespace], dict), f'Value occupying the "{self._namespace}" position in the config is not a dictionary'
 
         for key, value in config[self._namespace].items():
@@ -101,7 +105,7 @@ class Tunable(ABC):
 
         return unspecified
 
-    def is_concrete(self) -> bool:
+    def is_complete(self) -> bool:
         '''
         This method will check if all locations on dimensions all dimensions have been specified.
         '''

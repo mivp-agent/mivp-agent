@@ -9,9 +9,8 @@ CURRENT_FILE = os.path.abspath(os.path.realpath(__file__))
 CURRENT_DIR = os.path.dirname(CURRENT_FILE)
 
 
-@patch('mivp_agent.cli.run.importlib.util.module_from_spec')
-@patch('mivp_agent.cli.run.importlib.util.spec_from_file_location')
-def test_basic(spec_from_file_location, module_from_spec):
+@patch('mivp_agent.cli.run._load_dynamic_task')
+def test_basic(task_loader):
     parser = ArgumentParser()
     cli = RunCLI(parser)
 
@@ -20,31 +19,13 @@ def test_basic(spec_from_file_location, module_from_spec):
 
     args = {
         'python_file': CURRENT_FILE,
-        'python_callable': 'mock_callable',
-        'args': None
+        'config': '{"namespace": {"value": 5}}'
     }
 
-    spec_from_file_location.return_value = Mock()
-    module_from_spec.return_value = mock_module
+    task_loader.return_value = Mock()
 
     cli.do_it(args)
-    spec_from_file_location.assert_called_once_with(
-        'dynamic_callable',
-        CURRENT_FILE
-    )
-    mock_module.mock_callable.assert_called_once_with()
-
-    # Again with some args
-    args['args'] = ['key1=value1', 'key2=value2']
-    cli.do_it(args)
-    spec_from_file_location.assert_called_with(
-        'dynamic_callable',
-        CURRENT_FILE
-    )
-    mock_module.mock_callable.assert_called_with(
-        key1='value1',
-        key2='value2'
-    )
+    task_loader.assert_called_once_with(CURRENT_FILE)
 
 
 def test_real_file(capsys):
@@ -55,9 +36,8 @@ def test_real_file(capsys):
     '''
 
     args = {
-        'python_file': os.path.join(CURRENT_DIR, 'res/valid_callable.py'),
-        'python_callable': 'callable',
-        'args': None
+        'python_file': os.path.join(CURRENT_DIR, 'res/valid_task.py'),
+        'config': '{"namespace": {"value": 5}}'
     }
 
     parser = ArgumentParser()

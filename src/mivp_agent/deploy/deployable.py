@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
+from mivp_agent.tunable import Tunable
 
-class Deployable(ABC):
+
+class Deployable(ABC, Tunable):
     '''
     The `Deployable` construct provides an common interface used by subclasses of `Deployment`. It has two primary purposes.
     

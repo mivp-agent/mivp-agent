@@ -12,18 +12,12 @@ class BadCallable(Task):
         # Won't be used
         return None
     
-    def get_callable(self):
-        return 'not-a-callable'
+    # No run
 
 
-def test_callable_validation():
-    b = BadCallable()
-    with pytest.raises(AssertionError):
-        b.get_command()
-
-
-def my_callable():
-    pass
+def test_abc():
+    with pytest.raises(TypeError):
+        BadCallable()
 
 
 class ValidTask(Task):
@@ -31,8 +25,8 @@ class ValidTask(Task):
         # This won't be used so... almost valid ;)
         return None
     
-    def get_callable(self):
-        return my_callable
+    def run():
+        pass
 
 
 def test_directory():
@@ -41,13 +35,14 @@ def test_directory():
 
 
 def test_command():
-    expected_command = 'agnt run test_task.py my_callable'
-    expected_command += ' --args key1=value1 key2=value2'
+    expected_command = 'agnt run test_task.py'
+    expected_command += ' {\\"namespace\\":{\\"value\\":5}}'
 
-    kwargs = {
-        'key1': 'value1',
-        'key2': 'value2'
+    config = {
+        'namespace': {
+            'value': 5
+        }
     }
 
-    t = ValidTask(**kwargs)
+    t = ValidTask(config=config)
     assert t.get_command() == expected_command

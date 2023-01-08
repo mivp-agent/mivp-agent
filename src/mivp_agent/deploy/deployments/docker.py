@@ -12,11 +12,16 @@ import docker
 from docker.client import DockerClient
 from argparse import ArgumentParser, Namespace
 
+from typing import Tuple
+
 DEPLOYABLE_DIRECTORY = "/data/deployable"
 MIVP_AGENT_PKG_DIRECTORY = "/packages/mivp-agent"
 
 
 class DockerDeployment(Deployment):
+    def feasible_space(self) -> Tuple[str, dict]:
+        return 'docker', {}
+
     '''
     The `DockerDeployment`
     '''
@@ -136,7 +141,7 @@ class DockerDeployment(Deployment):
             print('\nError: The directory passed to --dev must contain both "setup.cfg" and "setup.py".')
             exit(1)
 
-    def setup(self, args: dict, task: Task, environment: Environment):
+    def stop(self, args: dict, task: Task, environment: Environment):
         # Validate dev path important to do before setup b/c the function will exit without calling tear down
         if args['dev'] is not None:
             self._validate_package_path(args['dev'])
@@ -177,7 +182,7 @@ class DockerDeployment(Deployment):
                 except Empty:
                     time.sleep(0.1)
 
-    def teardown(self, args: Namespace, task: Task, environment: Environment):
+    def start(self, args: Namespace, task: Task, environment: Environment):
         if self.task_container is not None:
             with Halo(text='Stopping task container...', spinner='dots') as s:
                 self.task_container.stop()

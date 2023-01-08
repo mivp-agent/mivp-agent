@@ -1,3 +1,5 @@
+import os
+import json
 from mivp_agent.tunable.tunable import Tunable, NOT_SET
 
 
@@ -23,6 +25,10 @@ def generate_config(*args, rule=None):
 
     config = {}
     for tunable in args:
+        # Only generate config for tunables with feasible spaces
+        if tunable._namespace == NOT_SET:
+            continue
+
         namespace = {}
         for key, value in tunable._values.items():
             # If there is a rule & the rule returns false
@@ -38,3 +44,13 @@ def generate_config(*args, rule=None):
         config[tunable._namespace] = namespace
     
     return config
+
+
+def config_from_json(file_path) -> dict:
+    try:
+        with open(os.path.abspath(file_path), 'r') as f:
+            data = json.load(f)
+    except:  # noqa: E722
+        raise RuntimeError(f'Failed to load json file at {file_path}')
+    
+    return data

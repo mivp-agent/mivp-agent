@@ -31,16 +31,20 @@ def test_docker():
         CURRENT_DIR,
         'basic_deployable/task.py'
     )
+    config_file = os.path.join(
+        CURRENT_DIR,
+        'basic_deployable/config.json'
+    )
     package_dir = os.path.abspath(os.path.join(
         CURRENT_DIR,
         '../..'
     ))
-    deploy_command = f'agnt deploy docker {task_file} --task-args key=value --dev {package_dir}'
+    deploy_command = f'agnt deploy docker {task_file} --config {config_file} --dev {package_dir}'
 
     # The lists below should be ordered, it will be asserted later in the test
     task_output = [
         "Hello from the task!",
-        "With args: {'key': 'value'}",
+        "With value: 7",
         "!! End of stream received !!"
     ]
     task_output = [f'task | {out}' for out in task_output]
